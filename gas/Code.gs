@@ -138,7 +138,11 @@ function listEvents() {
 
 function createEvent(body) {
   if (body.admin_key !== ADMIN_KEY) throw new Error('Invalid admin key');
-  const { event_id, month, theme, host_name, vote_count, items } = body;
+  const { event_id, month, theme, host_name, vote_count } = body;
+  let items = body.items;
+  if (typeof items === 'string') {
+    try { items = JSON.parse(items); } catch(_) { items = []; }
+  }
   if (!event_id || !theme || !host_name) throw new Error('Missing fields');
 
   appendRow(SHEETS.events, {
@@ -215,8 +219,12 @@ function submitRating(body) {
 }
 
 function submitVote(body) {
-  const { event_id, participant_id, item_ids } = body;
-  if (!event_id || !participant_id || !Array.isArray(item_ids)) {
+  const { event_id, participant_id } = body;
+  let item_ids = body.item_ids;
+  if (typeof item_ids === 'string') {
+    try { item_ids = JSON.parse(item_ids); } catch(_) { item_ids = [item_ids]; }
+  }
+  if (!event_id || !participant_id || !Array.isArray(item_ids) || !item_ids.length) {
     throw new Error('Missing fields');
   }
   const events = rowsAsObjects(sheet(SHEETS.events));

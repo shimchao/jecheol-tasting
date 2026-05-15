@@ -186,25 +186,21 @@ const S = {
   _poll: null,
 };
 
-// ── API
-async function get(action, params={}) {
-  const qs = new URLSearchParams({action,...params}).toString();
+// ── API (GAS POST redirect가 body 유실시키므로 GET으로 통일)
+async function call(action, params={}) {
+  const flat = {action};
+  for (const [k, v] of Object.entries(params)) {
+    flat[k] = (Array.isArray(v) || (v !== null && typeof v === 'object'))
+      ? JSON.stringify(v) : v;
+  }
+  const qs = new URLSearchParams(flat).toString();
   const r = await fetch(`${GAS_URL}?${qs}`, {redirect:'follow'});
   const d = await r.json();
   if (!d.ok) throw new Error(d.error||'API error');
   return d.data;
 }
-async function post(action, body={}) {
-  const r = await fetch(`${GAS_URL}?action=${encodeURIComponent(action)}`, {
-    method:'POST',
-    headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body: JSON.stringify({action,...body}),
-    redirect:'follow',
-  });
-  const d = await r.json();
-  if (!d.ok) throw new Error(d.error||'API error');
-  return d.data;
-}
+const get  = (action, p={}) => call(action, p);
+const post = (action, p={}) => call(action, p);
 
 // ── Render engine
 const $app = () => document.getElementById('app');
