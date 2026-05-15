@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>제철의 미학 · 버티컬 테이스팅</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+  <style>
+    :root {
+      --bg: #f7f5f0;
+      --card: #ffffff;
+      --primary: #2d5a3d;
+      --primary-lt: #e8f2ec;
+      --accent: #c8956b;
+      --text: #222;
+      --muted: #888;
+      --star: #f0a500;
+      --border: #e5e0d6;
+      --danger: #b5351a;
+      --r: 16px;
+      --sh: 0 2px 12px rgba(0,0,0,.08);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    #app { max-width: 480px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; }
+
+    /* Header */
+    .hd { padding: 18px 20px 14px; text-align: center; border-bottom: 1px solid var(--border); background: var(--card); position: sticky; top: 0; z-index: 10; }
+    .hd-logo { font-size: 11px; letter-spacing: .15em; color: var(--muted); text-transform: uppercase; margin-bottom: 2px; }
+    .hd-title { font-size: 17px; font-weight: 700; color: var(--primary); }
+
+    /* Content */
+    .content { flex: 1; padding: 24px 20px 48px; display: flex; flex-direction: column; gap: 20px; }
+
+    /* Card */
+    .card { background: var(--card); border-radius: var(--r); box-shadow: var(--sh); overflow: hidden; }
+    .card-body { padding: 20px; }
+
+    /* Button */
+    .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; transition: opacity .15s, transform .1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn:active { transform: scale(.98); opacity: .85; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+    .btn-accent { background: var(--accent); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn:disabled { opacity: .4; pointer-events: none; }
+
+    /* Input */
+    .inp { width: 100%; padding: 14px 16px; border: 2px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 16px; background: var(--bg); color: var(--text); outline: none; transition: border-color .2s; }
+    .inp:focus { border-color: var(--primary); }
+    .ta { resize: none; height: 80px; }
+    .lbl { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: block; }
+
+    /* Progress */
+    .prog-wrap { background: var(--border); height: 4px; border-radius: 2px; }
+    .prog-bar { height: 100%; background: var(--primary); border-radius: 2px; transition: width .4s; }
+    .prog-text { font-size: 12px; color: var(--muted); text-align: right; margin-top: 4px; }
+
+    /* Item image */
+    .item-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: #e8ede9; }
+    .item-img-ph { width: 100%; aspect-ratio: 4/3; background: linear-gradient(135deg,#e8ede9,#d4e0d8); display: flex; align-items: center; justify-content: center; font-size: 64px; }
+
+    /* Stars */
+    .stars { display: flex; gap: 8px; justify-content: center; padding: 8px 0; }
+    .star { font-size: 36px; cursor: pointer; transition: transform .1s; user-select: none; filter: grayscale(1) opacity(.3); }
+    .star.on { filter: none; }
+    .star:active { transform: scale(.85); }
+    .star-label { text-align: center; font-size: 13px; color: var(--muted); min-height: 20px; }
+
+    /* Vote picks */
+    .pick { display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--card); border-radius: 14px; border: 2px solid var(--border); cursor: pointer; transition: border-color .2s, background .2s; }
+    .pick.sel { border-color: var(--primary); background: var(--primary-lt); }
+    .pick-img { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; background: #e8ede9; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 28px; overflow: hidden; }
+    .pick-img img { width: 100%; height: 100%; object-fit: cover; }
+    .pick-info { flex: 1; }
+    .pick-name { font-size: 16px; font-weight: 700; }
+    .pick-desc { font-size: 13px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+    .pick-chk { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+    .pick.sel .pick-chk { background: var(--primary); border-color: var(--primary); color: white; }
+
+    /* Results */
+    .winner { background: linear-gradient(135deg,var(--primary) 0%,#4a8860 100%); color: white; border-radius: var(--r); padding: 28px 24px; text-align: center; }
+    .winner-lbl { font-size: 11px; letter-spacing: .1em; opacity: .8; }
+    .winner-name { font-size: 26px; font-weight: 800; margin-top: 8px; }
+    .winner-stats { display: flex; gap: 20px; justify-content: center; margin-top: 14px; }
+    .wstat { text-align: center; }
+    .wstat-val { font-size: 22px; font-weight: 700; }
+    .wstat-lbl { font-size: 11px; opacity: .7; margin-top: 2px; }
+
+    .res-item { background: var(--card); border-radius: var(--r); overflow: hidden; box-shadow: var(--sh); }
+    .res-hd { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
+    .rank { width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: white; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .rank-1 { background: #f0a500; }
+    .res-thumb { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: #e8ede9; display: flex; align-items: center; justify-content: center; font-size: 22px; overflow: hidden; flex-shrink: 0; }
+    .res-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .res-name { font-size: 16px; font-weight: 700; flex: 1; }
+    .bars { display: flex; gap: 8px; padding: 0 16px 14px; }
+    .bar-w { flex: 1; }
+    .bar-lbl { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .bar-bg { background: var(--border); height: 8px; border-radius: 4px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width .8s; }
+    .bar-val { font-size: 13px; font-weight: 700; margin-top: 4px; }
+    .cmnts { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .cmnt { background: var(--bg); border-radius: 10px; padding: 10px 12px; }
+    .cmnt-nick { font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 2px; }
+    .cmnt-text { font-size: 14px; }
+
+    /* Host table */
+    .tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .tbl th { padding: 10px; text-align: left; color: var(--muted); font-weight: 600; border-bottom: 2px solid var(--border); }
+    .tbl td { padding: 10px; border-bottom: 1px solid var(--border); }
+    .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .bg-g { background: #e8f2ec; color: #2d5a3d; }
+    .bg-gr { background: #f0f0f0; color: #888; }
+    .bg-r { background: #fbe9e7; color: #b5351a; }
+
+    /* Center / waiting */
+    .ctr { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; min-height: 70dvh; text-align: center; padding: 24px; }
+    .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* New event form */
+    .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .fg { display: flex; flex-direction: column; gap: 6px; }
+    .item-blk { background: var(--bg); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--border); }
+    .item-num { font-size: 12px; font-weight: 700; color: var(--primary); }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #222; color: white; padding: 12px 22px; border-radius: 24px; font-size: 14px; z-index: 1000; white-space: nowrap; animation: fadeUp .3s; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+    /* Misc */
+    .sec-ttl { font-size: 20px; font-weight: 800; }
+    .sec-sub { font-size: 14px; color: var(--muted); margin-top: 4px; }
+    .chip { display: inline-flex; align-items: center; padding: 4px 12px; background: var(--primary-lt); color: var(--primary); border-radius: 20px; font-size: 13px; font-weight: 600; }
+    .tc { text-align: center; }
+    .muted { color: var(--muted); font-size: 14px; }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+'use strict';
+
+// ───────────────────────────────────────────
+//  CONFIG  —  Step 3: GAS URL을 여기에 붙여넣기
+// ───────────────────────────────────────────
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbw9Q_kg_TraHrHona67fdmFwlny2nwP59tkIh_WM0nJTq0sdf0w46axaYgrKXqOvam0/exec';
+
+// ── URL params
+const P    = new URLSearchParams(location.search);
+const EID  = P.get('event');
+const ADM  = P.get('admin');   // host password in URL → host mode
+const ISNEW = P.get('new') === 'true';
+
+// ── LocalStorage
+const LS = {
+  k:    k => `jch_${k}_${EID||'_'}`,
+  get:  k => { try { return localStorage.getItem(LS.k(k)); } catch { return null; } },
+  set:  (k,v) => { try { localStorage.setItem(LS.k(k), v); } catch {} },
+  getJ: k => { try { return JSON.parse(LS.get(k)); } catch { return null; } },
+  setJ: (k,v) => LS.set(k, JSON.stringify(v)),
+};
+
+// ── State
+const S = {
+  screen: 'loading',   // loading|join|rating|vote|waiting|results|host|new-event|error
+  event:  null,
+  items:  [],
+  part:   null,        // {participant_id, nickname}
+  rated:  new Set(),   // item_ids already rated
+  voted:  false,
+  ri:     0,           // rating index
+  cr:     {stars:0, comment:''},  // current rating draft
+  tmpVote: [],
+  results: null,
+  hostData: null,
+  error: null,
+  _poll: null,
+};
+
+// ── API
+async function get(action, params={}) {
+  const qs = new URLSearchParams({action,...params}).toString();
+  const r = await fetch(`${GAS_URL}?${qs}`, {redirect:'follow'});
+  const d = await r.json();
+  if (!d.ok) throw new Error(d.error||'API error');
+  return d.data;
+}
+async function post(action, body={}) {
+  const r = await fetch(GAS_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({action,...body}),
+    redirect:'follow',
+  });
+  const d = await r.json();
+  if (!d.ok) throw new Error(d.error||'API error');
+  return d.data;
+}
+
+// ── Render engine
+const $app = () => document.getElementById('app');
+
+function render() {
+  $app().innerHTML = html();
+  bind();
+}
+
+function hdr(sub) {
+  return `<div class="hd"><div class="hd-logo">제철의 미학</div>${sub?`<div class="hd-title">${sub}</div>`:''}</div>`;
+}
+
+function imgTag(src, cls, alt) {
+  if (!src) return `<div class="${cls} item-img-ph">🦑</div>`;
+  return `<img class="${cls}" src="${src}" alt="${alt||''}" onerror="this.parentNode.innerHTML='<div style=\\'font-size:3rem\\'>🦑</div>'">`;
+}
+
+function html() {
+  switch (S.screen) {
+    case 'join':      return vJoin();
+    case 'rating':    return vRating();
+    case 'vote':      return vVote();
+    case 'waiting':   return vWaiting();
+    case 'results':   return vResults();
+    case 'host':      return vHost();
+    case 'new-event': return vNewEvent();
+    case 'error':     return vError();
+    default:          return vLoading();
+  }
+}
+
+// ── Views ──────────────────────────────────
+
+function vLoading() {
+  return `${hdr()}<div class="ctr"><div class="spinner"></div><div class="muted">불러오는 중…</div></div>`;
+}
+
+function vError() {
+  return `${hdr('오류')}<div class="ctr"><div style="font-size:3rem">😕</div><div class="sec-ttl">접속 오류</div><div class="muted" style="max-width:300px">${S.error||'알 수 없는 오류'}</div></div>`;
+}
+
+function vJoin() {
+  const ev = S.event;
+  return `
+    ${hdr(ev.theme)}
+    <div class="content">
+      <div class="card">
+        <div class="card-body tc" style="padding:28px 20px">
+          <div class="chip" style="margin-bottom:12px">🌿 ${ev.month} 정기모임</div>
+          <div class="sec-ttl" style="margin:8px 0">${ev.theme}</div>
+          <div class="muted">호스트: ${ev.host_name}</div>
+          <div class="muted" style="margin-top:4px">${S.items.length}종 블라인드 테이스팅</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <label class="lbl" for="nick">닉네임 입력</label>
+          <input id="nick" class="inp" type="text" placeholder="예: 호준, 먹보123" maxlength="20" autocomplete="off" />
+          <div style="margin-top:4px;font-size:12px;color:var(--muted)">실명 또는 별명 자유롭게</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="join-btn">🍽️ 테이스팅 시작</button>
+    </div>`;
+}
+
+function vRating() {
+  const item = S.items[S.ri];
+  const total = S.items.length;
+  const done  = S.rated.size;
+  const pct   = (done / total * 100).toFixed(0);
+  const stars = S.cr.stars;
+  const labels = ['','별로예요','그저 그래요','괜찮아요','맛있어요','최고예요'];
+
+  return `
+    ${hdr(S.event.theme)}
+    <div class="content">
+      <div>
+        <div class="prog-wrap"><div class="prog-bar" style="width:${pct}%"></div></div>
+        <div class="prog-text">${done} / ${total} 완료</div>
+      </div>
+      <div class="card">
+        ${item.image_url
+          ? `<img class="item-img" src="${item.image_url}" alt="${item.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+          : ''}
+        <div class="item-img-ph" style="${item.image_url?'display:none':''}">🦑</div>
+        <div class="card-body">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:4px">항목 ${S.ri+1}</div>
+          <div style="font-size:22px;font-weight:800;margin-bottom:6px">${item.name}</div>
+          <div style="font-size:14px;color:var(--muted)">${item.description}</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="lbl tc">별점 선택 (필수)</div>
+          <div class="stars" id="stars">
+            ${[1,2,3,4,5].map(n=>`<span class="star${stars>=n?' on':''}" data-v="${n}">⭐</span>`).join('')}
+          </div>
+          <div class="star-label">${stars ? labels[stars] : '별을 눌러 평가해주세요'}</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <label class="lbl" for="cmt">한줄평 (선택)</label>
+          <textarea id="cmt" class="inp ta" placeholder="맛, 향, 식감 자유롭게…" maxlength="200">${escHtml(S.cr.comment)}</textarea>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="next-btn" ${stars===0?'disabled':''}>
+        ${S.ri < S.items.length-1 ? '다음 항목 →' : '🏆 투표하러 가기 →'}
+      </button>
+    </div>`;
+}
+
+function vVote() {
+  const sv = S.tmpVote;
+  return `
+    ${hdr(S.event.theme)}
+    <div class="content">
+      <div>
+        <div class="sec-ttl">🏆 최종 투표</div>
+        <div class="sec-sub">가장 맛있었던 멍게 1종을 선택해주세요</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px" id="vote-list">
+        ${S.items.map(item=>{
+          const sel = sv.includes(item.item_id);
+          return `<div class="pick${sel?' sel':''}" data-iid="${item.item_id}">
+            <div class="pick-img">${item.image_url?`<img src="${item.image_url}" alt="${item.name}" onerror="this.style.display='none'">`:'🦑'}</div>
+            <div class="pick-info">
+              <div class="pick-name">${item.name}</div>
+              <div class="pick-desc">${item.description}</div>
+            </div>
+            <div class="pick-chk">${sel?'✓':''}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <button class="btn btn-primary" id="vote-btn" ${sv.length===0?'disabled':''}>투표 완료</button>
+    </div>`;
+}
+
+function vWaiting() {
+  return `
+    ${hdr(S.event.theme)}
+    <div class="ctr">
+      <div style="font-size:4rem">🌿</div>
+      <div class="sec-ttl">입력 완료!</div>
+      <div class="muted" style="max-width:280px">호스트가 결과를 공개하면<br>자동으로 결과 화면이 나타납니다</div>
+      <div class="spinner"></div>
+      <div class="muted" style="font-size:12px">자동 확인 중…</div>
+    </div>`;
+}
+
+function vResults() {
+  const r = S.results;
+  if (!r?.revealed) return vWaiting();
+
+  const sorted = [...r.items].sort((a,b)=>b.vote_count-a.vote_count||b.avg_stars-a.avg_stars);
+  const maxV = Math.max(...sorted.map(i=>i.vote_count), 1);
+  const w = sorted[0];
+
+  return `
+    ${hdr(S.event.theme)}
+    <div class="content">
+      <div class="winner">
+        <div class="winner-lbl">🎉 1위 발표</div>
+        <div class="winner-name">${w.name}</div>
+        <div class="winner-stats">
+          <div class="wstat"><div class="wstat-val">⭐ ${w.avg_stars.toFixed(1)}</div><div class="wstat-lbl">평균 별점</div></div>
+          <div class="wstat"><div class="wstat-val">🗳️ ${w.vote_count}표</div><div class="wstat-lbl">최다 득표</div></div>
+        </div>
+      </div>
+      <div class="sec-ttl">순위별 결과</div>
+      ${sorted.map((item,i)=>{
+        const vp = (item.vote_count/maxV*100).toFixed(0);
+        const sp = (item.avg_stars/5*100).toFixed(0);
+        return `<div class="res-item">
+          <div class="res-hd">
+            <div class="rank${i===0?' rank-1':''}">${i+1}</div>
+            <div class="res-thumb">${item.image_url?`<img src="${item.image_url}" alt="${item.name}" onerror="this.style.display='none'">`:'🦑'}</div>
+            <div class="res-name">${item.name}</div>
+          </div>
+          <div class="bars">
+            <div class="bar-w">
+              <div class="bar-lbl">별점</div>
+              <div class="bar-bg"><div class="bar-fill" style="width:${sp}%"></div></div>
+              <div class="bar-val">⭐ ${item.avg_stars.toFixed(1)} <span style="color:var(--muted);font-size:11px">(${item.rating_count}명)</span></div>
+            </div>
+            <div class="bar-w">
+              <div class="bar-lbl">득표</div>
+              <div class="bar-bg"><div class="bar-fill" style="width:${vp}%"></div></div>
+              <div class="bar-val">🗳️ ${item.vote_count}표</div>
+            </div>
+          </div>
+          ${item.comments.length ? `<div class="cmnts">${item.comments.map(c=>`<div class="cmnt"><div class="cmnt-nick">${c.nickname} ${'⭐'.repeat(c.stars)}</div><div class="cmnt-text">${escHtml(c.comment)}</div></div>`).join('')}</div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function vHost() {
+  if (!S.hostData) return `${hdr('호스트 대시보드')}<div class="ctr"><div class="spinner"></div></div>`;
+  const d = S.hostData;
+  return `
+    ${hdr('호스트 대시보드')}
+    <div class="content">
+      <div class="card">
+        <div class="card-body" style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div class="sec-ttl">${S.event?.theme||EID}</div>
+            <div class="muted" style="margin-top:2px">참여자 ${d.participant_count}명 · ${d.item_count}종</div>
+          </div>
+          ${d.revealed ? `<span class="badge bg-g">공개 완료</span>` : `<span class="badge bg-gr">대기 중</span>`}
+        </div>
+      </div>
+      <div class="card">
+        <div style="padding:0;overflow:auto">
+          <table class="tbl">
+            <thead><tr><th>닉네임</th><th>평가</th><th>투표</th></tr></thead>
+            <tbody>
+              ${d.completion.map(p=>`<tr>
+                <td>${p.nickname}</td>
+                <td><span class="badge ${p.ratings_done>=p.ratings_total?'bg-g':'bg-gr'}">${p.ratings_done}/${p.ratings_total}</span></td>
+                <td><span class="badge ${p.voted?'bg-g':'bg-r'}">${p.voted?'✓ 완료':'대기'}</span></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <button class="btn btn-outline" id="host-refresh">↻ 새로고침</button>
+      ${!d.revealed
+        ? `<button class="btn btn-accent" id="reveal-btn">🎉 결과 공개하기</button>`
+        : `<button class="btn btn-primary" id="view-res-btn">결과 보기</button>`}
+    </div>`;
+}
+
+function vNewEvent() {
+  const items = [
+    {name:'양식멍게',    img:'images/munge-01-yangsik.jpg', desc:'울퉁불퉁 붉은 껍질, 균일한 맛 · 4~8월 제철'},
+    {name:'자연산멍게',  img:'images/munge-02-natural.jpg', desc:'통영·거제 청정해역 해녀 채취 · 향이 진하고 야성적'},
+    {name:'비단멍게',    img:'images/munge-03-bidan.jpg',   desc:'동해안 수심 30m+ 잠수부 채취 · 매끈한 껍질, 단맛 강함'},
+    {name:'돌멍게',      img:'images/munge-04-dol.jpg',     desc:'짙은 황갈색 돌 같은 외형 · 양식 불가, 4종 중 향·맛 최고급'},
+  ];
+  return `
+    ${hdr('새 이벤트 등록')}
+    <div class="content">
+      <div class="card">
+        <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
+          <div class="fg"><label class="lbl">이벤트 ID (영문·숫자·하이픈)</label><input class="inp" id="fi-id" value="2026-05-munge"></div>
+          <div class="frow">
+            <div class="fg"><label class="lbl">월 (YYYY-MM)</label><input class="inp" id="fi-month" value="2026-05"></div>
+            <div class="fg"><label class="lbl">투표 수</label><input class="inp" id="fi-vc" type="number" value="1"></div>
+          </div>
+          <div class="fg"><label class="lbl">테마</label><input class="inp" id="fi-theme" value="멍게 버티컬 테이스팅"></div>
+          <div class="fg"><label class="lbl">호스트 이름</label><input class="inp" id="fi-host" value="동장 (심호준)"></div>
+          <div class="fg"><label class="lbl">관리자 비밀번호</label><input class="inp" id="fi-admin" type="password" placeholder="제철2026"></div>
+        </div>
+      </div>
+      <div class="sec-ttl">시식 항목 (4종)</div>
+      ${items.map((it,i)=>`
+        <div class="item-blk">
+          <div class="item-num">항목 ${i+1}</div>
+          <input class="inp" data-i="${i}" data-f="name" placeholder="이름" value="${it.name}">
+          <input class="inp" data-i="${i}" data-f="img"  placeholder="images/xxx.jpg" value="${it.img}">
+          <input class="inp" data-i="${i}" data-f="desc" placeholder="설명" value="${it.desc}">
+        </div>`).join('')}
+      <button class="btn btn-primary" id="create-btn">이벤트 등록</button>
+    </div>`;
+}
+
+// ── Bind events ─────────────────────────────
+
+function bind() {
+  switch (S.screen) {
+    case 'join':      bJoin();     break;
+    case 'rating':    bRating();   break;
+    case 'vote':      bVote();     break;
+    case 'host':      bHost();     break;
+    case 'new-event': bNewEvent(); break;
+  }
+}
+
+function bJoin() {
+  const inp = document.getElementById('nick');
+  const btn = document.getElementById('join-btn');
+  if (!inp||!btn) return;
+  inp.focus();
+  inp.addEventListener('keydown', e => { if(e.key==='Enter') btn.click(); });
+  btn.addEventListener('click', async () => {
+    const nick = inp.value.trim();
+    if (!nick) { toast('닉네임을 입력해주세요'); return; }
+    btn.disabled = true; btn.textContent = '참여 중…';
+    try {
+      const res = await post('join', {event_id:EID, nickname:nick});
+      S.part = {participant_id:res.participant_id, nickname:res.nickname};
+      LS.set('pid', res.participant_id);
+      LS.set('nick', nick);
+      S.ri = 0; S.cr = {stars:0,comment:''};
+      S.screen = 'rating';
+      render();
+    } catch(e) {
+      toast('오류: '+e.message);
+      btn.disabled = false; btn.textContent = '🍽️ 테이스팅 시작';
+    }
+  });
+}
+
+function bRating() {
+  document.querySelectorAll('.star').forEach(el => {
+    el.addEventListener('click', () => {
+      const cmt = document.getElementById('cmt');
+      if (cmt) S.cr.comment = cmt.value;
+      S.cr.stars = Number(el.dataset.v);
+      render();
+    });
+  });
+  const nb = document.getElementById('next-btn');
+  if (!nb) return;
+  nb.addEventListener('click', async () => {
+    const cmt = document.getElementById('cmt');
+    const comment = cmt ? cmt.value.trim() : '';
+    if (!S.cr.stars) { toast('별점을 선택해주세요'); return; }
+    nb.disabled = true; nb.textContent = '저장 중…';
+    const item = S.items[S.ri];
+    try {
+      await post('submitRating', {
+        event_id: EID,
+        participant_id: S.part.participant_id,
+        item_id: item.item_id,
+        stars: S.cr.stars,
+        comment,
+      });
+      S.rated.add(item.item_id);
+      LS.setJ('rated', [...S.rated]);
+      if (S.rated.size >= S.items.length) {
+        S.tmpVote = []; S.screen = 'vote';
+      } else {
+        S.ri = S.items.findIndex((it,i) => i > S.ri && !S.rated.has(it.item_id));
+        if (S.ri < 0) S.ri = S.items.findIndex(it => !S.rated.has(it.item_id));
+        S.cr = {stars:0, comment:''};
+      }
+      render();
+    } catch(e) {
+      toast('저장 실패: '+e.message);
+      nb.disabled = false;
+      nb.textContent = S.ri < S.items.length-1 ? '다음 항목 →' : '🏆 투표하러 가기 →';
+    }
+  });
+}
+
+function bVote() {
+  if (!S.tmpVote) S.tmpVote = [];
+  const maxV = S.event.vote_count || 1;
+  document.querySelectorAll('.pick').forEach(el => {
+    el.addEventListener('click', () => {
+      const iid = el.dataset.iid;
+      if (S.tmpVote.includes(iid)) {
+        S.tmpVote = S.tmpVote.filter(x=>x!==iid);
+      } else {
+        if (S.tmpVote.length >= maxV) S.tmpVote = [iid];
+        else S.tmpVote.push(iid);
+      }
+      render();
+    });
+  });
+  const vb = document.getElementById('vote-btn');
+  if (!vb) return;
+  vb.addEventListener('click', async () => {
+    if (!S.tmpVote.length) { toast('항목을 선택해주세요'); return; }
+    vb.disabled = true; vb.textContent = '제출 중…';
+    try {
+      await post('submitVote', {
+        event_id: EID,
+        participant_id: S.part.participant_id,
+        item_ids: S.tmpVote,
+      });
+      LS.set('voted','true');
+      S.voted = true; S.screen = 'waiting';
+      render();
+      startPoll();
+    } catch(e) {
+      toast('오류: '+e.message);
+      vb.disabled = false; vb.textContent = '투표 완료';
+    }
+  });
+}
+
+function bHost() {
+  const rb = document.getElementById('host-refresh');
+  if (rb) rb.addEventListener('click', loadHost);
+  const rvb = document.getElementById('reveal-btn');
+  if (rvb) rvb.addEventListener('click', async () => {
+    if (!confirm('결과를 공개하면 모든 참여자 화면에 결과가 표시됩니다. 계속할까요?')) return;
+    rvb.disabled = true; rvb.textContent = '공개 중…';
+    try {
+      await post('reveal', {event_id:EID, admin_key:ADM});
+      toast('🎉 결과가 공개되었습니다!');
+      await loadHost();
+    } catch(e) { toast('오류: '+e.message); }
+  });
+  const vrb = document.getElementById('view-res-btn');
+  if (vrb) vrb.addEventListener('click', loadResults);
+}
+
+function bNewEvent() {
+  const btn = document.getElementById('create-btn');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    const eid   = document.getElementById('fi-id')?.value.trim();
+    const month = document.getElementById('fi-month')?.value.trim();
+    const theme = document.getElementById('fi-theme')?.value.trim();
+    const host  = document.getElementById('fi-host')?.value.trim();
+    const vc    = parseInt(document.getElementById('fi-vc')?.value)||1;
+    const adminK = document.getElementById('fi-admin')?.value;
+    if (!eid||!theme||!host||!adminK) { toast('필수 항목을 입력해주세요'); return; }
+
+    const map = {};
+    document.querySelectorAll('[data-i]').forEach(el => {
+      const i = el.dataset.i;
+      if (!map[i]) map[i] = {};
+      map[i][el.dataset.f] = el.value.trim();
+    });
+    const items = Object.values(map).map(m => ({name:m.name||'',image_url:m.img||'',description:m.desc||''}));
+
+    btn.disabled = true; btn.textContent = '등록 중…';
+    try {
+      await post('createEvent', {event_id:eid, month, theme, host_name:host, vote_count:vc, items, admin_key:adminK});
+      toast('✅ 이벤트 등록 완료!');
+      setTimeout(() => { location.href = `?event=${eid}&admin=${adminK}`; }, 1500);
+    } catch(e) {
+      toast('오류: '+e.message);
+      btn.disabled = false; btn.textContent = '이벤트 등록';
+    }
+  });
+}
+
+// ── Data loaders ────────────────────────────
+
+async function loadHost() {
+  S.screen = 'host'; S.hostData = null; render();
+  try {
+    const [ev, hd] = await Promise.all([
+      get('getEvent',   {event_id:EID}),
+      get('hostStatus', {event_id:EID, admin_key:ADM}),
+    ]);
+    S.event = ev.event; S.items = ev.items; S.hostData = hd;
+    render();
+  } catch(e) { S.screen='error'; S.error=e.message; render(); }
+}
+
+async function loadResults() {
+  try {
+    const d = await get('results', {event_id:EID});
+    S.results = d; S.screen = 'results'; render();
+  } catch(e) { toast('결과 불러오기 실패: '+e.message); }
+}
+
+function startPoll() {
+  if (S._poll) clearInterval(S._poll);
+  S._poll = setInterval(async () => {
+    try {
+      const d = await get('results', {event_id:EID});
+      if (d.revealed) {
+        clearInterval(S._poll);
+        S.results = d; S.screen = 'results'; render();
+      }
+    } catch(_) {}
+  }, 5000);
+}
+
+// ── Helpers ─────────────────────────────────
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toast(msg) {
+  document.querySelectorAll('.toast').forEach(el=>el.remove());
+  const el = document.createElement('div');
+  el.className = 'toast'; el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 3000);
+}
+
+// ── Init ────────────────────────────────────
+
+async function init() {
+  if (ISNEW) { S.screen='new-event'; render(); return; }
+
+  if (!EID) {
+    S.screen='error';
+    S.error='이벤트 ID가 없습니다. 올바른 링크로 접속해주세요.\n예: ?event=2026-05-munge';
+    render(); return;
+  }
+
+  if (ADM) { await loadHost(); return; }
+
+  try {
+    const {event, items} = await get('getEvent', {event_id:EID});
+    S.event = event; S.items = items;
+
+    if (event.revealed) { await loadResults(); return; }
+
+    const savedPid  = LS.get('pid');
+    const savedNick = LS.get('nick');
+
+    if (savedPid && savedNick) {
+      S.part = {participant_id:savedPid, nickname:savedNick};
+      S.rated = new Set(LS.getJ('rated')||[]);
+      S.voted = LS.get('voted')==='true';
+
+      if (S.voted) {
+        S.screen='waiting'; render(); startPoll();
+      } else if (S.rated.size >= items.length) {
+        S.tmpVote=[]; S.screen='vote'; render();
+      } else {
+        S.ri = items.findIndex(it=>!S.rated.has(it.item_id));
+        if (S.ri<0) S.ri=0;
+        S.cr = {stars:0,comment:''};
+        S.screen='rating'; render();
+      }
+    } else {
+      S.screen='join'; render();
+    }
+  } catch(e) {
+    S.screen='error'; S.error=e.message; render();
+  }
+}
+
+render();  // show loading immediately
+init();
+</script>
+</body>
+</html>
